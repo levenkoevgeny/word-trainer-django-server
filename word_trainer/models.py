@@ -19,7 +19,7 @@ class MyUser(models.Model):
 
 class Dictionary(models.Model):
     dictionary_name = models.CharField(max_length=255, verbose_name="Dictionary name")
-    description = models.TextField(verbose_name="Description")
+    description = models.TextField(verbose_name="Description", blank=True, null=True)
     date_created = models.DateTimeField(verbose_name="Date time created", auto_now_add=True)
     date_updated = models.DateTimeField(verbose_name="Date time updated", auto_now=True)
     logo = models.ImageField(verbose_name="Logo", blank=True, null=True, upload_to="avatars")
@@ -40,15 +40,15 @@ class Word(models.Model):
     word_eng = models.CharField(max_length=255, verbose_name="Word eng")
     date_created = models.DateTimeField(verbose_name="Date time created", auto_now_add=True)
     date_updated = models.DateTimeField(verbose_name="Date time updated", auto_now=True)
-    dictionary = models.ForeignKey(Dictionary, on_delete=models.CASCADE, verbose_name="Dictionary")
+    dictionary = models.ForeignKey(Dictionary, on_delete=models.CASCADE, verbose_name="Dictionary", related_name="words")
 
     def __str__(self):
         return self.word_rus + ' ' + self.word_eng
 
     class Meta:
         ordering = ('id',)
-        verbose_name = 'Dictionary'
-        verbose_name_plural = 'Dictionaries'
+        verbose_name = 'Word'
+        verbose_name_plural = 'Words'
 
 
 

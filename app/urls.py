@@ -25,11 +25,16 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
+from word_trainer import views
+
 router = routers.DefaultRouter()
+router.register(r'users', views.MyUserViewSet)
+router.register(r'dictionaries', views.DictionaryViewSet)
+router.register(r'words', views.WordViewSet)
 
 urlpatterns = [
     path('', RedirectView.as_view(url='/api')),
-    # path('api/users/me/', views.get_me),
+    path('api/users/me/', views.get_me),
     path('api/', include(router.urls)),
     path('admin/', admin.site.urls),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
