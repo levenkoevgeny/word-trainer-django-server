@@ -30,6 +30,7 @@ class MyUserViewSet(viewsets.ModelViewSet):
 class DictionaryViewSet(viewsets.ModelViewSet):
 
     def list(self, request):
+        print(request.GET)
         try:
             token = request.META['HTTP_AUTHORIZATION'].split(" ")[1]
             payload = jwt.decode(token, key=settings.SIMPLE_JWT['SIGNING_KEY'], algorithms=['HS256'])
@@ -40,9 +41,9 @@ class DictionaryViewSet(viewsets.ModelViewSet):
         except MyUser.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if user_data.user.is_superuser:
-            queryset = Dictionary.objects.all().order_by('-visit_count')
+            queryset = Dictionary.objects.filter(dictionary_name__icontains=request.GET['dictionary_name']).order_by('-visit_count')
         else:
-            queryset = Dictionary.objects.filter(owner=user_data).order_by('-visit_count')
+            queryset = Dictionary.objects.filter(owner=user_data, dictionary_name__icontains=request.GET['dictionary_name']).order_by('-visit_count')
         serializer = DictionarySerializer(queryset, many=True)
         return Response(serializer.data)
 
