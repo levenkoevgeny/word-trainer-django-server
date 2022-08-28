@@ -22,7 +22,7 @@ class Dictionary(models.Model):
     description = models.TextField(verbose_name="Description", blank=True, null=True)
     date_created = models.DateTimeField(verbose_name="Date time created", auto_now_add=True)
     date_updated = models.DateTimeField(verbose_name="Date time updated", auto_now=True)
-    logo = models.ImageField(verbose_name="Logo", blank=True, null=True, upload_to="avatars")
+    logo = models.ImageField(verbose_name="Logo", blank=True, null=True, upload_to="dictionary")
     visit_count = models.IntegerField(verbose_name="Visit count", default=0)
     owner = models.ForeignKey(MyUser, on_delete=models.CASCADE, verbose_name="Owner", blank=True, null=True)
 
