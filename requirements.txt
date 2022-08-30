@@ -1,4 +1,4 @@
-Django
+Django==4.0
 django-cors-headers
 django-filter
 django-heroku
