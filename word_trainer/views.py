@@ -7,9 +7,6 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.conf import settings
 from django.shortcuts import get_object_or_404
-from django.db import transaction
-from django.db.models import F
-from django.core.exceptions import ValidationError
 from rest_framework import viewsets
 from rest_framework import permissions
 from rest_framework.permissions import IsAuthenticated
@@ -17,6 +14,8 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.authtoken.models import Token
 
 from jose import jwt
 
@@ -30,14 +29,14 @@ class MyUserViewSet(viewsets.ModelViewSet):
 class DictionaryViewSet(viewsets.ModelViewSet):
 
     def list(self, request):
-        print(request.GET)
+        # print(request)
+        # try:
+        #     token = request.META['HTTP_AUTHORIZATION'].split(" ")[1]
+        #     payload = jwt.decode(token, key=settings.SIMPLE_JWT['SIGNING_KEY'], algorithms=['HS256'])
+        # except jwt.JWTError:
+        #     return Response(status=status.HTTP_403_FORBIDDEN)
         try:
-            token = request.META['HTTP_AUTHORIZATION'].split(" ")[1]
-            payload = jwt.decode(token, key=settings.SIMPLE_JWT['SIGNING_KEY'], algorithms=['HS256'])
-        except jwt.JWTError:
-            return Response(status=status.HTTP_403_FORBIDDEN)
-        try:
-            user_data = MyUser.objects.get(user_id=payload['user_id'])
+            user_data = MyUser.objects.get(user_id=1)
         except MyUser.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if user_data.user.is_superuser:
@@ -80,13 +79,13 @@ class WordViewSet(viewsets.ModelViewSet):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_me(request):
+    # try:
+    #     token = request.META['HTTP_AUTHORIZATION'].split(" ")[1]
+    #     payload = jwt.decode(token, key=settings.SIMPLE_JWT['SIGNING_KEY'], algorithms=['HS256'])
+    # except jwt.JWTError:
+    #     return Response(status=status.HTTP_403_FORBIDDEN)
     try:
-        token = request.META['HTTP_AUTHORIZATION'].split(" ")[1]
-        payload = jwt.decode(token, key=settings.SIMPLE_JWT['SIGNING_KEY'], algorithms=['HS256'])
-    except jwt.JWTError:
-        return Response(status=status.HTTP_403_FORBIDDEN)
-    try:
-        user_data = MyUser.objects.get(user_id=payload['user_id'])
+        user_data = MyUser.objects.get(user_id=request.GET['user_id'])
         serializer = MyUserSerializer(user_data)
         return Response(serializer.data)
     except MyUser.DoesNotExist:
@@ -100,3 +99,17 @@ def user_post_save_handler(sender, instance, created, **kwargs):
     if isinstance(instance, User):
         if created:
             MyUser.objects.create(user=instance, last_name="Новый пользователь")
+
+
+class CustomAuthToken(ObtainAuthToken):
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data,
+                                           context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+        token, created = Token.objects.get_or_create(user=user)
+        return Response({
+            'token': token.key,
+            'user_id': user.pk,
+        })
