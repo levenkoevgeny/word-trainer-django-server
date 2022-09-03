@@ -29,14 +29,8 @@ class MyUserViewSet(viewsets.ModelViewSet):
 class DictionaryViewSet(viewsets.ModelViewSet):
 
     def list(self, request):
-        # print(request)
-        # try:
-        #     token = request.META['HTTP_AUTHORIZATION'].split(" ")[1]
-        #     payload = jwt.decode(token, key=settings.SIMPLE_JWT['SIGNING_KEY'], algorithms=['HS256'])
-        # except jwt.JWTError:
-        #     return Response(status=status.HTTP_403_FORBIDDEN)
         try:
-            user_data = MyUser.objects.get(user_id=1)
+            user_data = MyUser.objects.get(user_id=request.GET['user_id'])
         except MyUser.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if user_data.user.is_superuser:
@@ -79,11 +73,6 @@ class WordViewSet(viewsets.ModelViewSet):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_me(request):
-    # try:
-    #     token = request.META['HTTP_AUTHORIZATION'].split(" ")[1]
-    #     payload = jwt.decode(token, key=settings.SIMPLE_JWT['SIGNING_KEY'], algorithms=['HS256'])
-    # except jwt.JWTError:
-    #     return Response(status=status.HTTP_403_FORBIDDEN)
     try:
         user_data = MyUser.objects.get(user_id=request.GET['user_id'])
         serializer = MyUserSerializer(user_data)
